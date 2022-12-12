@@ -31,21 +31,9 @@ jobs:
       id: cache-virtualenv
     - run: pip install -r requirements.txt
 
-  # Build the sphinx documentation
-  build:
-    needs: create-virtualenv
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v2
-      - uses: syphar/restore-virtualenv@v1
-        id: cache-virtualenv
-
-      - run: sphinx-build -M html doc/source build
-  
   # Single deploy job since we're just deploying
   deploy:
-    needs: build
+    needs: create-virtualenv
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -53,13 +41,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Load Python
+        uses: actions/setup-python@v2
+      - name: Set up virtualenv
+        uses: syphar/restore-virtualenv@v1
+        id: cache-virtualenv
       - name: Setup Pages
         uses: actions/configure-pages@v2
+      - run: sphinx-build -M html 'doc/source' './build'
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload entire repository
-          path: './build/'
+          path: './build/html'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
