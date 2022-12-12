@@ -29,7 +29,7 @@ jobs:
     - uses: actions/setup-python@v2
     - uses: syphar/restore-virtualenv@v1
       id: cache-virtualenv
-    - run: pip install sphinx
+    - run: pip -r requirements.txt
 
   # Build the sphinx documentation
   build:
@@ -40,9 +40,8 @@ jobs:
       - uses: actions/setup-python@v2
       - uses: syphar/restore-virtualenv@v1
         id: cache-virtualenv
-      
-      - run: cd './doc/'
-      - run: make html
+
+      - run: sphinx-build -M html doc/source build
   
   # Single deploy job since we're just deploying
   deploy:
@@ -59,7 +58,7 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload entire repository
-          path: './doc/build/'
+          path: './build/'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
